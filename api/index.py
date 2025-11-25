@@ -88,6 +88,10 @@ async def root():
 async def health():
     return {"status": "healthy", "timestamp": "2025-11-25"}
 
+@app.post("/api/generar-json")
+async def generar_docx_json(doc_data: DocumentoCatastral):
+    # ... mismo código que antes, pero acepta JSON directo
+
 @app.get("/api/test-cors")
 async def test_cors():
     return {"message": "¡CORS desde APEX: 100% FUNCIONANDO! 🎉", "test": "Éxito"}
