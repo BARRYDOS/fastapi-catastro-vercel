@@ -10,7 +10,7 @@ import os
 
 app = FastAPI(title="Catastro → DOCX", version="1.0")
 
-# CORS Middleware de respaldo
+# CORS MIDDLEWARE DE RESPALDO
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -20,11 +20,11 @@ app.add_middleware(
     expose_headers=["Content-Disposition"],
 )
 
-# ¡EL MIDDLEWARE MÁGICO QUE ARREGLA CORS EN VERCEL!
+# MIDDLEWARE HTTP QUE ARREGLA TODO EN VERCEL (¡IMPrescindIBLE!)
 @app.middleware("http")
-async def cors_and_preflight_middleware(request: Request, call_next):
+async def cors_middleware(request: Request, call_next):
     if request.method == "OPTIONS":
-        response = JSONResponse(content={"detail": "Preflight OK"})
+        response = JSONResponse(content={"detail": "Preflight OK"}, status_code=200)
         response.headers["Access-Control-Allow-Origin"] = "*"
         response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
         response.headers["Access-Control-Allow-Headers"] = "*"
@@ -37,7 +37,7 @@ async def cors_and_preflight_middleware(request: Request, call_next):
     response.headers["Access-Control-Allow-Headers"] = "*"
     return response
 
-# Modelos Pydantic (sin cambios)
+# Modelos (sin cambios)
 class Terreno(BaseModel):
     valor_terreno_propio: int = Field(..., ge=0)
     metros_terreno_propio: Optional[float] = None
@@ -73,63 +73,72 @@ class DocumentoCatastral(BaseModel):
     archivo: str
     predio: List[Predio]
 
-# Endpoints
+# Endpoints básicos
 @app.get("/")
 @app.get("/api")
 async def root():
     return {
-        "message": "¡API FastAPI + Vercel + Oracle APEX = ÉXITO TOTAL! 🚀",
+        "message": "API FUNCIONANDO - CORS ACTIVO",
         "status": "ok",
-        "cors": "Middleware infalible activado",
-        "endpoints": ["/api", "/api/health", "/api/test-cors", "/api/generar-docx"]
+        "test_cors": "Prueba /api/test-cors"
     }
-
-@app.get("/api/health")
-async def health():
-    return {"status": "healthy", "timestamp": "2025-11-25"}
-
-@app.post("/api/generar-json")
-async def generar_docx_json(doc_data: DocumentoCatastral):
-    # ... mismo código que antes, pero acepta JSON directo
 
 @app.get("/api/test-cors")
 async def test_cors():
-    return {"message": "¡CORS desde APEX: 100% FUNCIONANDO! 🎉", "test": "Éxito"}
+    return {"message": "¡CORS OK desde Oracle APEX!"}
 
+@app.get("/api/health")
+async def health():
+    return {"status": "healthy"}
+
+# ENDPOINT ORIGINAL (para files)
 @app.post("/api/generar-docx")
 async def generar_docx(file: UploadFile = File(...)):
     if not file.filename.endswith(".json"):
-        raise HTTPException(400, "Solo JSON, por favor 😊")
+        raise HTTPException(400, "Solo JSON files")
 
     try:
         content = await file.read()
         data = json.loads(content.decode("utf-8"))
         doc_data = DocumentoCatastral.model_validate(data)
-    except json.JSONDecodeError as e:
-        raise HTTPException(422, f"JSON roto: {e}")
     except Exception as e:
-        raise HTTPException(422, f"Validación falló: {e}")
+        raise HTTPException(422, f"Error validación: {e}")
 
     template_path = "templates/1785-003.docx"
     if not os.path.exists(template_path):
-        raise HTTPException(500, f"Plantilla perdida en {template_path}")
+        raise HTTPException(500, "Plantilla no encontrada")
 
-    try:
-        doc = DocxTemplate(template_path)
-        doc.render(doc_data.model_dump())
+    doc = DocxTemplate(template_path)
+    doc.render(doc_data.model_dump())
 
-        output = io.BytesIO()
-        doc.save(output)
-        output.seek(0)
+    output = io.BytesIO()
+    doc.save(output)
+    output.seek(0)
 
-        nombre_archivo = doc_data.archivo
-        if not nombre_archivo.lower().endswith(".docx"):
-            nombre_archivo += ".docx"
+    nombre_archivo = doc_data.archivo + ".docx"
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": f'attachment; filename="{nombre_archivo}"'}
+    )
 
-        return StreamingResponse(
-            output,
-            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            headers={"Content-Disposition": f'attachment; filename="{nombre_archivo}"'}
-        )
-    except Exception as e:
-        raise HTTPException(500, f"DOCX error: {str(e)}")
+# NUEVO ENDPOINT PARA JSON DIRECTO (ideal para APEX)
+@app.post("/api/generar-json")
+async def generar_json(doc_data: DocumentoCatastral):
+    template_path = "templates/1785-003.docx"
+    if not os.path.exists(template_path):
+        raise HTTPException(500, "Plantilla no encontrada")
+
+    doc = DocxTemplate(template_path)
+    doc.render(doc_data.model_dump())
+
+    output = io.BytesIO()
+    doc.save(output)
+    output.seek(0)
+
+    nombre_archivo = doc_data.archivo + ".docx"
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": f'attachment; filename="{nombre_archivo}"'}
+    )
