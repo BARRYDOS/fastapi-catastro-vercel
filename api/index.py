@@ -1,15 +1,22 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware   # ← esta línea
 from pydantic import BaseModel, Field
-from typing import List   # ← ESTA LÍNEA ES LA QUE FALTA
+from typing import List
 import json
 import os
 from docx import Document
-from docx.shared import Inches
-import tempfile
-import shutil
 
 app = FastAPI()
+
+# ← AQUÍ VA EL CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],           # permite todo (ideal para pruebas)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class Terreno(BaseModel):
     valor_terreno_propio: float
