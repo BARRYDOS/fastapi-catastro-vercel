@@ -1,6 +1,6 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
-from pydantic import BaseModel, validator
-from typing import List
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel, Field, validator   # ← ESTA LÍNEA ES LA QUE FALTABA
 import json
 import os
 from docx import Document
