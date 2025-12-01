@@ -38,7 +38,8 @@ class Impuesto(BaseModel):
     cantidad_con_letra: str
 
 class Predio(BaseModel):
-    clave_catastral: str = Field(..., pattern=r'^\d{3}-\d{2}-\d{3}-\d{2}-\d{2}-[A-Z0-9]+$')
+    #clave_catastral: str = Field(..., pattern=r'^\d{3}-\d{2}-\d{3}-\d{2}-\d{2}-[A-Z0-9]+$')
+    clave_catastral: str
     folio: int
     direccion: str
     contribuyente: str
