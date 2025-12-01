@@ -22,23 +22,22 @@ app.add_middleware(
 
 # ===== MODELOS =====
 class Terreno(BaseModel):
-    valor_terreno_propio: float
-    metros_terreno_propio: float
-    valor_terreno_comun: float
-    metros_terreno_comun: float
+    valor_terreno_propio: str
+    metros_terreno_propio: str
+    valor_terreno_comun: str
+    metros_terreno_comun: str
 
 class Construccion(BaseModel):
-    valor_construccion_propia: float
-    metros_construccion_propia: float
-    valor_construccion_comun: float
-    metros_construccion_comun: float
+    valor_construccion_propia: str
+    metros_construccion_propia: str
+    valor_construccion_comun: str
+    metros_construccion_comun: str
 
 class Impuesto(BaseModel):
-    impuesto_predial: float
+    impuesto_predial: str
     cantidad_con_letra: str
 
 class Predio(BaseModel):
-    #clave_catastral: str = Field(..., pattern=r'^\d{3}-\d{2}-\d{3}-\d{2}-\d{2}-[A-Z0-9]+$')
     clave_catastral: str
     folio: int
     direccion: str
