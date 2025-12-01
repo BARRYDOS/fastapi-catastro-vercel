@@ -22,32 +22,49 @@ app.add_middleware(
 
 # ===== MODELOS =====
 class Terreno(BaseModel):
-    valor_terreno_propio: str
-    metros_terreno_propio: str
-    valor_terreno_comun: str
-    metros_terreno_comun: str
+    valor_terreno_propio: Optional[str] = None
+    metros_terreno_propio: Optional[str] = None
+    valor_terreno_comun: Optional[str] = None
+    metros_terreno_comun: Optional[str] = None
 
 class Construccion(BaseModel):
-    valor_construccion_propia: str
-    metros_construccion_propia: str
-    valor_construccion_comun: str
-    metros_construccion_comun: str
+    valor_construccion_propia: Optional[str] = None
+    metros_construccion_propia: Optional[str] = None
+    valor_construccion_comun: Optional[str] = None
+    metros_construccion_comun: Optional[str] = None
 
 class Impuesto(BaseModel):
-    impuesto_predial: str
-    cantidad_con_letra: str
+    recargo: Optional[str] = None
+    multa: Optional[str] = None
+    gastos: Optional[str] = None
+    subsidios: Optional[str] = None
+    suma: Optional[str] = None
+    ultimo_periodo_pagado: Optional[str] = None
+    impuesto_predial: Optional[str] = None
+    monto_a_pagar: Optional[str] = None
+    cantidad_con_letra: Optional[str] = None
+
+class Documento(BaseModel):
+    fecha_actual: Optional[str] = None
+    tipo_documento: int = Field
+    fecha_documento: Optional[str] = None
+    fecha_ini_vigencia: Optional[str] = None
+    fecha_fin_vigencia: Optional[str] = None
+
 
 class Predio(BaseModel):
-    clave_catastral: str
-    folio: int
-    direccion: str
-    contribuyente: str
+    clave_catastral: Optional[str] = None
+    folio: int = Field
+    direccion: Optional[str] = None
+    contribuyente: Optional[str] = None
     terreno: Terreno
     construccion: Construccion
     impuesto: Impuesto
+    documento: Documento
 
-class DatosRequest(BaseModel):
-    archivo: str
+class DocumentoCatastral(BaseModel):
+    archivo: Optional[str] = None
+    plantilla_tipo_documento: Optional[str] = None
     predio: List[Predio]
 
 # ===== ENDPOINTS =====
