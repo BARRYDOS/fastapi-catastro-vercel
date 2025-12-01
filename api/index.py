@@ -60,44 +60,51 @@ def api_root():
     return {"status": "ok", "endpoints": ["/api/generar-docx"]}
 
 @app.post("/api/generar-docx")
-async def generar_docx(file: UploadFile = File(...)):
+async def generar_docx(file: UploadFile = File(...)):    
     if not file.filename.endswith(".json"):
-        raise HTTPException(400, "Solo se permiten archivos .json")
+        raise HTTPException(400, "Solo archivos .json")
 
     try:
         content = await file.read()
-        data = json.loads(content.decode("utf-8"))
+        data = json.loads(content)
         doc_data = DocumentoCatastral.model_validate(data)
-    except json.JSONDecodeError as e:
-        raise HTTPException(422, f"JSON inválido: {e}")
     except Exception as e:
-        raise HTTPException(422, f"Error de validación: {e}")
+        raise HTTPException(422, f"Error en validación: {str(e)}")
 
-    template_path = "./1785-003.docx"
+    # Cargar plantilla
+    template_path = "templates/"+doc_data.plantilla_tipo_documento
     if not os.path.exists(template_path):
-        raise HTTPException(500, "Plantilla no encontrada en /templates")
+        raise HTTPException(500, "Plantilla no encontrada")
 
-    try:
-        doc = DocxTemplate(template_path)
-        doc.render(doc_data.model_dump())
+    doc = DocxTemplate(template_path)
 
-        output = io.BytesIO()
-        doc.save(output)
-        output.seek(0)
+    # Renderizar
+    doc.render(doc_data.model_dump())
 
-        nombre_archivo = doc_data.archivo
-        if not nombre_archivo.lower().endswith(".docx"):
-            nombre_archivo += ".docx"
+    # Guardar en memoria
+    #output = io.BytesIO()
+    #doc.save(output)
+    doc.save(doc_data.archivo)
+    #output.seek(0)
 
-        return StreamingResponse(
-            output,
-            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            headers={
-                "Content-Disposition": f'attachment; filename="{nombre_archivo}"'
-            }
-        )
-    except Exception as e:
-        raise HTTPException(500, f"Error al generar DOCX: {str(e)}")
+    # Nombre del archivo de salida
+    nombre_salida = doc_data.archivo.replace(".docx", "_generado.docx")
 
-# Vercel necesita que exportes 'app'
-# No agregues 'handler' ni nada más al final
+    #return StreamingResponse(
+    #    output,
+    #    media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    #    headers={"Content-Disposition": f"attachment; filename={doc_data.archivo}"},
+    #)
+
+
+
+
+    # Convertir un solo archivo
+    # convert(doc_data.archivo, "output.pdf")
+
+    return FileResponse(
+            path=doc_data.archivo,
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            # media_type="application/pdf"
+            # filename="Datos históricos por sitio.docx"   # nombre que verá el usuario
+    )
