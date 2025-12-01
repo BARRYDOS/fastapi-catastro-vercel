@@ -107,6 +107,7 @@ async def generar_docx(file: UploadFile = File(...)):
                 impuesto_suma = impuesto_predial + recargos + gastos_ejecucion
                 subsidio = impuesto_suma #* 0.1  # 10% ejemplo
                 adeudo_total = impuesto_suma - subsidio
+                ######
                 
                 from datetime import datetime
                 fecha_actual = datetime.now().strftime("%d/%m/%Y")
