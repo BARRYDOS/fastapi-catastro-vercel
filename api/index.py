@@ -69,7 +69,7 @@ class Predio(BaseModel):
 class DocumentoCatastral(BaseModel):
     plantilla_tipo_documento: Optional[str] = None
     archivo: Optional[str] = None
-    predio: List[Predio]
+    predio: List[Predio] = None
 
 # ===== ENDPOINTS =====
 @app.get("/api")
