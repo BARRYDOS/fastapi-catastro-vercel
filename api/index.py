@@ -67,8 +67,8 @@ class Predio(BaseModel):
     documento: Documento
 
 class DocumentoCatastral(BaseModel):
-    archivo: Optional[str] = None
     plantilla_tipo_documento: Optional[str] = None
+    archivo: Optional[str] = None
     predio: List[Predio]
 
 # ===== ENDPOINTS =====
