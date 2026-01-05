@@ -36,6 +36,7 @@ class Construccion(BaseModel):
     metros_construccion_comun: Optional[str] = None
 
 class Impuesto(BaseModel):
+    valor_catastral_orig: Optional[str] = None
     recargo: Optional[str] = None
     multa: Optional[str] = None
     gastos: Optional[str] = None
@@ -56,6 +57,7 @@ class Documento(BaseModel):
 
 class Predio(BaseModel):
     clave_catastral: Optional[str] = None
+    qr_url: Optional[str] = None
     folio: int = Field
     direccion: Optional[str] = None
     contribuyente: Optional[str] = None
